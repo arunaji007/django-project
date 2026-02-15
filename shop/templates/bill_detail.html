@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Billing Page</title>
+</head>
+<body>
+
+<h2>Billing Page</h2>
+
+<table>
+    <tr>
+        <td><strong>Customer Email</strong></td>
+        <td>{{ purchase.customer_email }}</td>
+    </tr>
+</table>
+
+<br>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Bill section</th>
+            <th>Product ID</th>
+            <th>Unit Price</th>
+            <th>Quantity</th>
+            <th>Purchase Price</th>
+            <th>Tax % for item</th>
+            <th>Tax payable for item</th>
+            <th>Total price of the item</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr>
+            {% if forloop.first %}
+            <td rowspan="{{ items|length }}"><strong>Bill section</strong></td>
+            {% endif %}
+            <td>{{ item.product.product_id }}</td>
+            <td>{{ item.unit_price }}</td>
+            <td>{{ item.qty }}</td>
+            <td>{{ item.unit_price|floatformat:2 }}</td>
+            <td>{{ item.tax_percent }}%</td>
+            <td>{{ item.tax_amount|floatformat:2 }}</td>
+            <td>{{ item.line_total|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<br>
+
+<table align="right">
+    <tr>
+        <td align="right"><strong>Total price without tax:</strong></td>
+        <td align="right">{{ total_without_tax|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td align="right"><strong>Total tax payable:</strong></td>
+        <td align="right">{{ total_tax|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td align="right"><strong>Net price of the purchased item:</strong></td>
+        <td align="right">{{ net_total|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td align="right"><strong>Rounded down value of the purchased items net price:</strong></td>
+        <td align="right">{{ rounded_total|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td align="right"><strong>Balance payable to the customer:</strong></td>
+        <td align="right">{{ balance|floatformat:2 }}</td>
+    </tr>
+</table>
+
+<br clear="all">
+<br>
+<hr>
+<br>
+
+<table align="right">
+    <tr>
+        <td colspan="2" align="right"><strong>Balance Denomination:</strong></td>
+    </tr>
+    <tr><td colspan="2">&nbsp;</td></tr>
+    {% for value, count in change %}
+    <tr>
+        <td align="right">{{ value }}:</td>
+        <td align="right">{{ count }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Billing Page</title>
+</head>
+<body>
+
+<h2>Billing Page</h2>
+
+<div align="right">
+    <a href="{% url 'customer_purchases' %}">View Customer Purchase History</a>
+</div>
+
+<br>
+
+<form method="post" id="billingForm">
+    {% csrf_token %}
+
+    <!-- Customer Email -->
+    <table>
+        <tr>
+            <td><strong>Customer Email</strong></td>
+            <td><input type="email" name="email" placeholder="Email ID" required></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td><button type="button" onclick="addRow()">Add New</button></td>
+        </tr>
+    </table>
+
+    <br>
+
+    <!-- Bill Section -->
+    <table>
+        <tr>
+            <td><strong>Bill section</strong></td>
+            <td colspan="3">
+                <div id="bill-items">
+                    <table>
+                        <tr>
+                            <td>
+                                <select name="product_0" id="product_0" onchange="calculateTotal()" required>
+                                    <option value="">Product ID</option>
+                                    {% for p in products %}
+                                        <option value="{{ p.product_id }}"
+                                                data-price="{{ p.price }}"
+                                                data-tax="{{ p.tax_percentage }}">
+                                            {{ p.product_id }} - {{ p.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+
+                            <td>
+                                <input type="number" name="qty_0" id="qty_0"
+                                       placeholder="Quantity" min="1"
+                                       onchange="calculateTotal()"
+                                       oninput="calculateTotal()" required>
+                            </td>
+
+                            <!-- Remove button -->
+                            <td>
+                                <button type="button" onclick="removeRow(this)">Remove</button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <br>
+
+    <!-- Totals -->
+    <table>
+        <tr>
+            <td><strong>Total Amount (with tax):</strong></td>
+            <td id="totalAmount">0.00</td>
+        </tr>
+        <tr>
+            <td><strong>Total Items:</strong></td>
+            <td id="totalItems">0</td>
+        </tr>
+    </table>
+
+    <br>
+    <hr>
+    <br>
+
+    <table>
+        <tr>
+            <td><strong>Denominations</strong></td>
+            <td></td>
+        </tr>
+        {% for d in denominations %}
+        <tr>
+            <td align="right">{{ d.value }}</td>
+            <td><input type="number" name="denom_{{ d.value }}" placeholder="Count" min="0" value="0"></td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+
+    <table>
+        <tr>
+            <td><strong>Cash paid by customer</strong></td>
+            <td><input type="number" name="paid_amount" placeholder="Amount" step="0.01" required></td>
+        </tr>
+    </table>
+
+    <br><br>
+
+    <div align="right">
+        <button type="button" onclick="window.location.reload()">Cancel</button>
+        <button type="submit">Generate Bill</button>
+    </div>
+
+</form>
+
+<script>
+let i = 1;
+
+const products = {
+    {% for p in products %}
+    "{{ p.product_id }}": {
+        price: {{ p.price }},
+        tax: {{ p.tax_percentage }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
+
+function addRow() {
+    const table = document.querySelector("#bill-items table");
+    const row = table.insertRow();
+
+    const cell1 = row.insertCell(0);
+    const cell2 = row.insertCell(1);
+    const cell3 = row.insertCell(2);
+
+    cell1.innerHTML = `
+        <select name="product_${i}" id="product_${i}" onchange="calculateTotal()" required>
+            <option value="">Product ID</option>
+            {% for p in products %}
+                <option value="{{ p.product_id }}"
+                        data-price="{{ p.price }}"
+                        data-tax="{{ p.tax_percentage }}">
+                    {{ p.product_id }} - {{ p.name }}
+                </option>
+            {% endfor %}
+        </select>
+    `;
+
+    cell2.innerHTML = `
+        <input type="number" name="qty_${i}" id="qty_${i}"
+               placeholder="Quantity" min="1"
+               onchange="calculateTotal()"
+               oninput="calculateTotal()" required>
+    `;
+
+    cell3.innerHTML = `
+        <button type="button" onclick="removeRow(this)">Remove</button>
+    `;
+
+    i++;
+}
+
+
+function removeRow(button) {
+    const row = button.closest("tr");
+    const table = document.querySelector("#bill-items table");
+
+    if (table.rows.length > 1) {
+        row.remove();
+        calculateTotal();
+    } else {
+        alert("At least one bill item is required.");
+    }
+}
+
+function calculateTotal() {
+    let totalAmount = 0;
+    let totalItems = 0;
+
+    for (let j = 0; j < i; j++) {
+        const productSelect = document.getElementById(`product_${j}`);
+        const qtyInput = document.getElementById(`qty_${j}`);
+
+        if (productSelect && qtyInput) {
+            const productId = productSelect.value;
+            const qty = parseInt(qtyInput.value) || 0;
+
+            if (productId && qty > 0 && products[productId]) {
+                const price = parseFloat(products[productId].price);
+                const taxPercent = parseFloat(products[productId].tax);
+
+                const purchasePrice = price * qty;
+                const taxAmount = (purchasePrice * taxPercent) / 100;
+                const lineTotal = purchasePrice + taxAmount;
+
+                totalAmount += lineTotal;
+                totalItems += qty;
+            }
+        }
+    }
+
+    document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+    document.getElementById('totalItems').textContent = totalItems;
+}
+
+
+calculateTotal();
+</script>
+
+</body>
+</html>

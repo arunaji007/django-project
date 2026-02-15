@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Purchase Details</title>
+</head>
+<body>
+
+<h2>Purchase Details - #{{ purchase.id }}</h2>
+
+<table>
+    <tr>
+        <td><strong>Customer Email:</strong></td>
+        <td>{{ purchase.customer_email }}</td>
+    </tr>
+    <tr>
+        <td><strong>Purchase Date:</strong></td>
+        <td>{{ purchase.created_at|date:"Y-m-d H:i:s" }}</td>
+    </tr>
+</table>
+
+<br>
+
+<h3>Items Purchased</h3>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Product ID</th>
+            <th>Product Name</th>
+            <th>Unit Price</th>
+            <th>Quantity</th>
+            <th>Purchase Price</th>
+            <th>Tax %</th>
+            <th>Tax Amount</th>
+            <th>Total Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.product.product_id }}</td>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.unit_price|floatformat:2 }}</td>
+            <td>{{ item.qty }}</td>
+            <td>{{ item.purchase_price|floatformat:2 }}</td>
+            <td>{{ item.tax_percent|floatformat:2 }}%</td>
+            <td>{{ item.tax_amount|floatformat:2 }}</td>
+            <td>{{ item.line_total|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<br>
+
+<table align="right">
+    <tr>
+        <td align="right"><strong>Total price without tax:</strong></td>
+        <td align="right">{{ total_without_tax|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td align="right"><strong>Total tax payable:</strong></td>
+        <td align="right">{{ total_tax|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td align="right"><strong>Net price of the purchased item:</strong></td>
+        <td align="right">{{ net_total|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td align="right"><strong>Rounded down value of the purchased items net price:</strong></td>
+        <td align="right">{{ rounded_total|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td align="right"><strong>Balance payable to the customer:</strong></td>
+        <td align="right">{{ balance|floatformat:2 }}</td>
+    </tr>
+</table>
+
+<br clear="all">
+
+{% if change %}
+<br>
+<hr>
+<br>
+
+<table align="right">
+    <tr>
+        <td colspan="2" align="right"><strong>Balance Denomination:</strong></td>
+    </tr>
+    <tr><td colspan="2">&nbsp;</td></tr>
+    {% for value, count in change %}
+    <tr>
+        <td align="right">{{ value }}:</td>
+        <td align="right">{{ count }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br clear="all">
+{% endif %}
+
+<br>
+<br>
+
+<a href="{% url 'customer_purchases' %}">← Back to Customer Purchases</a>
+|
+<a href="{% url 'billing' %}">← Back to Billing Page</a>
+
+</body>
+</html>

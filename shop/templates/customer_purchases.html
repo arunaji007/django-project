@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Purchases</title>
+</head>
+<body>
+
+<h2>Customer Purchase History</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <table>
+        <tr>
+            <td><strong>Customer Email:</strong></td>
+            <td><input type="email" name="email" placeholder="Enter customer email" value="{{ search_email }}" required></td>
+            <td><button type="submit">Search</button></td>
+        </tr>
+    </table>
+</form>
+
+<br>
+
+{% if search_email %}
+    <h3>Purchase History for: {{ search_email }}</h3>
+    
+    {% if purchases %}
+        <table border="1" cellpadding="5" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Purchase ID</th>
+                    <th>Date</th>
+                    <th>Total Items</th>
+                    <th>Total Amount</th>
+                    <th>Paid Amount</th>
+                    <th>Balance</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for purchase in purchases %}
+                <tr>
+                    <td>{{ purchase.id }}</td>
+                    <td>{{ purchase.created_at|date:"Y-m-d H:i:s" }}</td>
+                    <td>{{ purchase.items.count }}</td>
+                    <td>{{ purchase.total_amount|floatformat:2 }}</td>
+                    <td>{{ purchase.paid_amount|floatformat:2 }}</td>
+                    <td>
+                        {% widthratio purchase.paid_amount 1 1 as paid %}
+                        {% widthratio purchase.total_amount 1 1 as total %}
+                        {{ paid|add:"-"|add:total|floatformat:2 }}
+                    </td>
+                    <td>
+                        <a href="{% url 'purchase_detail' purchase.id %}">View Details</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No purchases found for this email address.</p>
+    {% endif %}
+{% endif %}
+
+<br>
+<br>
+
+<a href="{% url 'billing' %}">← Back to Billing Page</a>
+
+</body>
+</html>
