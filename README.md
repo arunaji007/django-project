@@ -2,8 +2,6 @@
 
 This is a Django billing application packed with Docker, so you **don’t need to install Python or PostgreSQL** on your computer.
 
-Just follow the steps below and the app will run.
-
 ---
 
 ## What you need first
