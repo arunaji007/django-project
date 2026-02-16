@@ -6,11 +6,32 @@ services:
     container_name: billing_web
     command: >
       sh -c "
+      echo 'Waiting for postgres...' &&
+      until pg_isready -h db -p 5432; do
+        sleep 1;
+      done &&
       python manage.py migrate &&
-      gunicorn billing.wsgi:application --bind 0.0.0.0:8000
+      python manage.py seed_data &&
+      python manage.py collectstatic --noinput &&
+      python manage.py createsuperuser --noinput || true &&
+      gunicorn billing.wsgi:application --bind 0.0.0.0:8000 --workers 3
       "
-    volumes:
-      - .:/app
     ports:
       - "8000:8000"
     env_file: .env.prod
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    container_name: billing_db
+    restart: always
+    environment:
+      POSTGRES_DB: billing
+      POSTGRES_USER: billing_user
+      POSTGRES_PASSWORD: billing_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
